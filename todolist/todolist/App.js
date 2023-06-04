@@ -6,13 +6,14 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { Picker } from '@react-native-picker/picker';
 
 const App = () => {
-  const [selectedDate, setSelectedDate] = useState('');
-  const [todos, setTodos] = useState({});
-  const [todoText, setTodoText] = useState('');
-  const [todoPriority, setTodoPriority] = useState('낮음');
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingTodoIndex, setEditingTodoIndex] = useState(-1);
-  const [completedTodos, setCompletedTodos] = useState({});
+  // 선택된 날짜와 할 일, 우선순위 등의 상태 변수를 관리하기 위한 useState 훅을 사용합니다.
+  const [selectedDate, setSelectedDate] = useState(''); // 선택된 날짜
+  const [todos, setTodos] = useState({}); // 할 일 목록
+  const [todoText, setTodoText] = useState(''); // 새로운 할 일 텍스트
+  const [todoPriority, setTodoPriority] = useState('낮음'); // 새로운 할 일 우선순위
+  const [modalVisible, setModalVisible] = useState(false); // 모달의 가시성 상태
+  const [editingTodoIndex, setEditingTodoIndex] = useState(-1); // 수정 중인 할 일 인덱스
+  const [completedTodos, setCompletedTodos] = useState({}); // 완료된 할 일 목록
 
   const handleDateSelect = (date) => {
     setSelectedDate(date.dateString);
@@ -22,6 +23,7 @@ const App = () => {
     if (selectedDate && todoText) {
       const newTodo = { text: todoText, priority: todoPriority };
       if (editingTodoIndex !== -1) {
+        // 수정 중인 할 일을 업데이트합니다.
         const updatedTodos = [...todos[selectedDate]];
         updatedTodos[editingTodoIndex] = newTodo;
         setTodos((prevTodos) => ({
@@ -30,6 +32,7 @@ const App = () => {
         }));
         setEditingTodoIndex(-1);
       } else {
+        // 새로운 할 일을 추가합니다.
         setTodos((prevTodos) => ({
           ...prevTodos,
           [selectedDate]: [...(prevTodos[selectedDate] || []), newTodo],
@@ -41,6 +44,7 @@ const App = () => {
   };
 
   const handleEditTodo = (index) => {
+    // 할 일 수정 모달을 열고, 수정할 할 일의 정보를 설정합니다.
     setEditingTodoIndex(index);
     setTodoText(todos[selectedDate][index].text);
     setTodoPriority(todos[selectedDate][index].priority);
@@ -48,6 +52,7 @@ const App = () => {
   };
 
   const handleDeleteTodo = (index) => {
+    // 할 일을 삭제합니다.
     const updatedTodos = [...todos[selectedDate]];
     updatedTodos.splice(index, 1);
     if (updatedTodos.length === 0) {
@@ -63,21 +68,23 @@ const App = () => {
   };
 
   const handleToggleComplete = (todo, index) => {
+    // 할 일의 완료 상태를 변경하고, 완료된 할 일은 목록의 맨 뒤로 이동시킵니다.
     const currentDateCompletedTodos = completedTodos[selectedDate] || [];
     const currentDateTodos = [...todos[selectedDate]];
 
     if (currentDateCompletedTodos.find((item) => item.text === todo.text && item.priority === todo.priority)) {
+      // 이미 완료된 할 일인 경우, 완료 목록에서 제거합니다.
       setCompletedTodos((prevCompletedTodos) => ({
         ...prevCompletedTodos,
         [selectedDate]: currentDateCompletedTodos.filter((item) => !(item.text === todo.text && item.priority === todo.priority)),
       }));
     } else {
+      // 완료되지 않은 할 일인 경우, 완료 목록에 추가하고 목록의 맨 뒤로 이동시킵니다.
       setCompletedTodos((prevCompletedTodos) => ({
         ...prevCompletedTodos,
         [selectedDate]: [...currentDateCompletedTodos, todo],
       }));
 
-      // move the completed item to the end of the list
       currentDateTodos.splice(index, 1);
       currentDateTodos.push(todo);
       setTodos((prevTodos) => ({
@@ -87,6 +94,7 @@ const App = () => {
     }
   };
 
+  // 완료된 날짜를 마크하기 위한 객체를 생성합니다.
   const completedDates = Object.keys(todos).reduce((obj, date) => {
     if (
       todos[date].length &&
@@ -98,6 +106,7 @@ const App = () => {
     return obj;
   }, {});
 
+  // 미완료된 날짜를 마크하기 위한 객체를 생성합니다.
   const incompletedDates = Object.keys(todos).reduce((obj, date) => {
     if (
       !todos[date].length ||
@@ -109,6 +118,7 @@ const App = () => {
     return obj;
   }, {});
 
+  // 모든 마크된 날짜를 통합합니다.
   const markedDates = {
     ...incompletedDates,
     ...completedDates,
